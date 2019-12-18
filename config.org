@@ -1,0 +1,502 @@
+* Look and feel 
+** Fullscreen at startup 
+  #+begin_src emacs-lisp
+    (add-to-list 'default-frame-alist '(fullscreen . maximized))
+  #+end_src
+
+* Dashboard
+  #+begin_src emacs-lisp
+    (use-package dashboard
+      :ensure t
+      :config
+      (dashboard-setup-startup-hook)
+
+      (setq dashboard-items '((recents . 10)))
+      (setq dashboard-banner-logo-title "Hello Øyvind!"))
+      (setq dashboard-startup-banner 'logo)
+  #+end_src
+
+  #+RESULTS:
+  : t
+
+* Input
+** Mac modifier key
+   #+begin_src emacs-lisp
+
+     (setq mac-option-modifier nil
+	   mac-command-modifier 'meta)
+   #+end_src
+** Scrolling
+   #+begin_src emacs-lisp
+     (setq scroll-conservatively 100)
+   #+end_src
+** Default yes or no to y/n
+   #+begin_src emacs-lisp
+     (defalias 'yes-or-no-p 'y-or-n-p)
+   #+end_src
+** Ivy
+   #+begin_src emacs-lisp
+     (use-package ivy
+       :ensure t
+       :init
+       (ivy-mode))
+       
+   #+end_src
+* Python
+** Default interpreter
+   #+begin_src emacs-lisp
+     (setq python-shell-interpreter "python3")
+   #+end_src
+
+   #+RESULTS:
+   : python3
+
+** Elpy
+   #+begin_src emacs-lisp
+     (use-package elpy
+       :ensure t
+       :config
+       (add-hook 'python-mode-hook(lambda() (elpy-enable))))
+
+     (setq elpy-rpc-python-command "python3")
+     (setq elpy-rpc-backend "jedi")
+
+   #+end_src
+
+   #+RESULTS:
+   : jedi
+   
+* Org 
+** basic config
+   #+begin_src emacs-lisp
+     (setq org-src-window-setup 'current-window)
+   #+end_src
+** Bullets mode 
+#+Begin_src emacs-lisp
+  (use-package org-bullets
+    :ensure t
+    :config
+    (add-hook 'org-mode-hook (lambda () (org-bullets-mode t))))
+
+
+  ;; (use-package org-notebook
+  ;;   :ensure t
+  ;;   :config
+  ;;   (add-hook 'org-mode-hook (lambda () (org-notebook t))))
+
+  (setq org-hide-emphasis-markers t)
+  (setq org-hide-leading-stars t)
+   #+end_src
+
+   #+RESULTS:
+   : t
+
+** Org tempo
+   #+begin_src emacs-lisp
+     (require 'org-tempo)
+
+     (add-to-list 'org-structure-template-alist '("p" . "src python :results output"))
+     (add-to-list 'org-structure-template-alist '("m" . "src emacs-lisp"))
+
+
+   #+end_src
+** Custom faces
+   #+begin_src emacs-lisp
+     (setq neo-theme (if (display-graphic-p) 'icons 'arrow))
+     (let* ((variable-tuple
+	     (cond ((x-list-fonts "Source Sans Pro") '(:font "Source Sans Pro"))
+		   ((x-list-fonts "Lucida Grande")   '(:font "Lucida Grande"))
+		   ((x-list-fonts "Verdana")         '(:font "Verdana"))
+		   ((x-family-fonts "Sans Serif")    '(:family "Sans Serif"))
+		   (nil (warn "Cannot find a Sans Serif Font.  Install Source Sans Pro."))))
+	    (base-font-color     (face-foreground 'default nil 'default))
+	    (headline           `(:inherit default :weight bold :foreground ,"#ffffff")))
+
+       (custom-theme-set-faces
+	'user
+	`(org-level-8 ((t (,@headline ,@variable-tuple))))
+	`(org-level-7 ((t (,@headline ,@variable-tuple))))
+	`(org-level-6 ((t (,@headline ,@variable-tuple))))
+	`(org-level-5 ((t (,@headline ,@variable-tuple))))
+	`(org-level-4 ((t (,@headline ,@variable-tuple :height 1.1))))
+	`(org-level-3 ((t (,@headline ,@variable-tuple :height 1.25))))
+	`(org-level-2 ((t (,@headline ,@variable-tuple :height 1.5))))
+	`(org-level-1 ((t (,@headline ,@variable-tuple :height 1.75))))
+	`(org-document-title ((t (,@headline ,@variable-tuple :height 2.0 :underline nil))))))
+   #+end_src
+   #+begin_src emacs-lisp
+     (custom-set-faces
+      ;; custom-set-faces was added by Custom.
+      ;; If you edit it by hand, you could mess it up, so be careful.
+      ;; Your init file should contain only one such instance.
+      ;; If there is more than one, they won't work right.
+      '(default ((t (:family "Source Code Pro" :foundry "nil" :slant normal :weight normal :height 140 :width normal))))
+      '(org-document-title ((t (:inherit default :weight bold :foreground "#ffffff" :font "Source Sans Pro" :height 2.0 :underline nil))))
+      '(org-level-1 ((t (:inherit default :weight bold :foreground "#ffffff" :font "Source Sans Pro" :height 1.75))))
+      '(org-level-2 ((t (:inherit default :weight bold :foreground "#ffffff" :font "Source Sans Pro" :height 1.5))))
+      '(org-level-3 ((t (:inherit default :weight bold :foreground "#ffffff" :font "Source Sans Pro" :height 1.25))))
+      '(org-level-4 ((t (:inherit default :weight bold :foreground "#ffffff" :font "Source Sans Pro" :height 1.1))))
+      '(org-level-5 ((t (:inherit default :weight bold :foreground "#ffffff" :font "Source Sans Pro"))))
+      '(org-level-6 ((t (:inherit default :weight bold :foreground "#ffffff" :font "Source Sans Pro"))))
+      '(org-level-7 ((t (:inherit default :weight bold :foreground "#ffffff" :font "Source Sans Pro"))))
+      '(org-level-8 ((t (:inherit default :weight bold :foreground "#ffffff" :font "Source Sans Pro")))))
+   #+end_src
+** Babel languages
+   #+begin_src emacs-lisp
+
+     (org-babel-do-load-languages
+      'org-babel-load-languages '((python . t)))
+
+     (require 'ob-java)
+     (add-to-list 'org-babel-load-languages '(java . t))
+   #+end_src
+** Org indent mode
+   #+begin_src emacs-lisp
+     (add-hook 'org-mode-hook 'org-indent-mode)
+   #+end_src
+** Misc
+   #+begin_src emacs-lisp
+   (font-lock-add-keywords 'org-mode
+                        '(("^ *\\([-]\\) "
+                           (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
+   #+end_src
+
+** Latex
+#+begin_src emacs-lisp
+  (setenv "PATH" (concat "/Library/TeX/texbin:" (getenv "PATH")))
+  (setq exec-path (append '("/Library/TeX/texbin") exec-path))
+#+end_src
+
+*** changing scale of preview
+#+begin_src emacs-lisp
+(setq org-format-latex-options (plist-put org-format-latex-options :scale 2.0))
+#+end_src
+** Pretty mode
+#+begin_src emacs-lisp
+#+end_src
+** agenda 
+#+begin_src emacs-lisp
+  (global-set-key (kbd "C-c a") 'org-agenda)
+  (setq org-agenda-files (list "~/org/todo.org"))
+#+end_src
+* Macos titlebar
+   #+begin_src emacs-lisp
+     (add-to-list 'default-frame-alist '(ns-transparent-titlebar . t))
+     (add-to-list 'default-frame-alist '(ns-appearance . dark))
+     (setq ns-use-proxy-icon  nil)
+     (setq frame-title-format nil)
+   #+end_src
+*** Error sound
+   #+begin_src emacs-lisp
+     (setq ring-bell-function 'ignore)
+   #+end_src
+* Modeline
+** Spaceline
+   #+begin_src emacs-lisp
+     ;; (use-package spaceline
+     ;;   :ensure t
+     ;;   :config
+     ;;   (require 'spaceline-config)
+     ;;   (setq powerline-default-separator (quote arrow))
+     ;;   (spaceline-spacemacs-theme))
+   #+end_src
+   #+
+     (use-package diminish
+       :ensure t
+       :init
+       (diminish 'company)
+       (diminish 'rainbow-mode)
+       (diminish 'ivy))
+   #+end_src
+** Doom modeline
+#+begin_src emacs-lisp
+    (use-package doom-modeline
+          :ensure t
+          :hook (after-init . doom-modeline-mode))
+#+end_src
+* Which key
+  #+begin_src emacs-lisp
+
+    (use-package which-key
+      :ensure t
+      :init
+      (which-key-mode))
+
+  #+end_src
+* Editor 
+** popup-killring
+   #+begin_src emacs-lisp
+     (use-package popup-kill-ring
+       :ensure t
+       :bind ("M-y" . popup-kill-ring))
+   #+end_src
+** kill-whole-word
+   #+begin_src emacs-lisp
+     (defun kill-whole-word ()
+       (interactive)
+       (backward-word)
+       (kill-word 1))
+
+     (global-set-key (kbd "C-c w w") 'kill-whole-word)
+   #+end_src
+** subword
+   #+begin_src emacs-lisp
+     (global-subword-mode 1)
+   #+end_src
+** Highlight line
+   #+begin_src emacs-lisp
+     (when window-system (global-hl-line-mode))
+   #+end_src
+** Indent guides
+   #+begin_src emacs-lisp
+     (use-package highlight-indent-guides
+       :ensure t
+       :init
+       (highlight-indent-guides-mode))
+     (setq highlight-indent-guides-method 'character)
+     
+     (setq highlight-indent-guides-character ?\|)
+   #+end_src
+** Autopair mode 
+   #+begin_src emacs-lisp
+     (use-package autopair
+       :ensure t
+       :config
+       (autopair-global-mode))
+   #+end_src 
+** copy-whole-line
+   #+begin_src emacs-lisp
+     (defun copy-whole-line ()
+       (interactive)
+       (save-excursion
+	 (kill-new
+	  (buffer-substring
+	   (point-at-bol)
+	   (point-at-eol)))))
+
+     (global-set-key (kbd "C-c w l") 'copy-whole-line)
+   #+end_src
+** swiper
+   #+begin_src emacs-lisp
+     (use-package swiper
+       :ensure t
+       :init
+       :bind ("C-s" . swiper))
+
+   #+end_src
+** yasnippet
+#+begin_src emacs-lisp
+  (use-package yasnippet
+    :ensure t
+    :config
+    (use-package yasnippet-snippets
+      :ensure t
+      )
+    (yas-reload-all))
+
+  (add-hook 'python-mode-hook 'yas-minor-mode)
+  (add-hook 'web-mode 'yas-minor-mode)
+  (add-hook 'emacs-lisp-mode-hook 'yas-minor-mode)
+
+#+end_src
+* File management
+** Backup and autosave
+   #+begin_src emacs-lisp
+     (setq make-backup-files nil)
+     (setq auto-save-default nil)
+   #+end_src
+* Neotree
+  #+begin_src emacs-lisp
+  (global-set-key (kbd "C-c p") 'neotree-toggle)
+  
+  #+end_src
+* Web
+** Web-mode
+   #+begin_src emacs-lisp
+     (use-package web-mode
+       :ensure t)
+     ;; enables web-mode for js files
+     (add-hook 'css-mode 'web-mode)
+     (add-to-list 'auto-mode-alist '("\\.jsx?$" . web-mode))
+     (add-to-list 'auto-mode-alist '("\\.js?$" . web-mode))
+   #+end_src
+** JS
+#+begin_src emacs-lisp
+  (setq web-mode-content-types-alist '(("jsx" . "\\.js[x]?\\'")))
+#+end_src
+
+** Flycheck
+#+begin_src emacs-lisp
+  (use-package flycheck
+    :ensure t
+    )
+
+  (setq-default flycheck-disabled-checkers
+                (append flycheck-disabled-checkers
+                        '(javascript-jshint json-jsonlist)))
+
+;; Enable eslint checker for web-mode
+(flycheck-add-mode 'javascript-eslint 'web-mode)
+;; Enable flycheck globally
+(add-hook 'after-init-hook #'global-flycheck-mode)
+#+end_src
+** Emmet
+#+begin_src emacs-lisp
+  (use-package emmet-mode
+    :ensure t)
+  (add-hook 'web-mode-hook 'emmet-mode)
+  (add-hook 'html-mode 'emmet-mode)
+
+
+#+end_src
+* Company
+** Normal setup
+  #+begin_src emacs-lisp
+    (use-package company
+      :ensure 
+      :config
+      (setq company-idle-delay 0)
+      (setq company-minimum-prefix-length 2)
+      :init
+      (add-hook 'after-init-hook 'global-company-mode))
+
+    (with-eval-after-load 'company
+      (define-key company-active-map (kbd "M-n") nil)
+      (define-key company-active-map (kbd "M-p") nil)
+      (define-key company-active-map (kbd "C-n") #'company-select-next)
+      (define-key company-active-map (kbd "C-p") #'company-select-previous)
+
+      )
+
+      #+end_src
+** Other backends
+*** python
+#+begin_src emacs-lisp
+  (use-package company-jedi
+    :ensure t)
+
+  (add-to-list 'company-backends 'company-jedi)
+
+#+end_src
+*** Tern (js)
+#+begin_src emacs-lisp
+  (use-package company-tern
+    :ensure t)
+
+
+  (add-to-list 'company-backends 'company-tern)
+#+end_src
+* Misc shortcuts
+  #+begin_src emacs-lisp
+    (global-set-key (kbd "C-c d") (lambda() (interactive)(find-file "~/.emacs.d/init.el")))
+    (global-set-key (kbd "C-c l d") (lambda() (interactive)(load-file "~/.emacs.d/init.el")))
+    (global-set-key (kbd "C-c t") (lambda () (interactive)(shell)))
+    (global-set-key (kbd "C-c c") (lambda () (interactive)(find-file "~/.emacs.d/config.org")))
+  #+end_src
+* Homeassistant 
+** Shortcut
+#+begin_src emacs-lisp
+  (global-set-key (kbd "C-c h e") (lambda () (interactive)(find-file"/ssh:pi@home:/home/homeassistant/.homeassistant/configuration.yaml")))
+#+end_src
+** reload shortcut 
+#+begin_src emacs-lisp
+  (defun restart-homeassistant ()
+    (interactive)
+    (shell-command-on-region
+     (point-min) (point-max)
+     (shell-command "ssh home sudo service home-assistant@homeassistant restart")))
+
+
+  (global-set-key (kbd "C-c h r") 'restart-homeassistant)
+#+end_src
+** yaml highlight
+#+begin_src emacs-lisp
+  (use-package yaml-mode
+    :ensure t)
+#+end_src
+* IDO
+** Enable IDO mode
+#+begin_src emacs-lisp
+  (setq ido-enable-flex-matching nil)
+  (setq ido-create-new-buffer 'always)
+  (setq ido-everywhere t)
+  (ido-mode 1)
+#+end_src
+** Ido vertical
+   #+begin_src emacs-lisp
+     (use-package ido-vertical-mode
+       :ensure t
+       :init
+       (ido-vertical-mode 1))
+     (setq ido-vertical-define-keys 'C-n-and-C-p-only)
+   #+end_src
+* Avy 
+  #+begin_src emacs-lisp
+    (use-package avy
+      :ensure t
+      :bind
+      ("M-s" . avy-goto-char))
+  #+end_src
+* Rainbow
+  #+begin_src emacs-lisp
+    (use-package rainbow-mode
+      :ensure t
+      :init (add-hook 'prog-mode-hook 'rainbow-mode))
+  #+end_src
+#+begin_src emacs-lisp
+  (use-package rainbow-delimiters
+    :ensure t
+    :init
+    (rainbow-delimiters-mode 1))
+#+end_src
+* Buffer and window
+** Kill current buffer
+   #+begin_src emacs-lisp
+     (defun kill-curr-buffer ()
+       (interactive)
+       (kill-buffer (current-buffer)))
+
+     (global-set-key (kbd "C-x k") 'kill-curr-buffer)
+   #+end_src
+** Switch-window
+  #+begin_src emacs-lisp
+    (use-package switch-window
+      :ensure t
+      :config
+      (setq swtich-window-input-style 'minibuffer)
+      (setq switch-window-increase 10)
+      (setq switch-window-threshold 2)
+      (setq switch-window-shortcut-style 'qwerty)
+      (setq switch-window-qwerty-shortcuts
+	    '("a" "s" "d" "f" "g" "h" "w" "e" "ø"))
+      :bind
+      ([remap other-window] . switch-window))
+
+  #+end_src
+** Window splitting function 
+  #+begin_src emacs-lisp
+    (defun split-and-follow-horizontally ()
+      (interactive)
+      (split-window-below)
+      (balance-windows)
+      (other-window 1))
+    (global-set-key (kbd "C-x 2") 'split-and-follow-horizontally)
+
+
+    (defun split-and-follow-vertically ()
+      (interactive)
+      (split-window-right)
+      (balance-windows)
+      (other-window 1))
+    (global-set-key (kbd "C-x 3") 'split-and-follow-vertically)
+  #+end_src
+* Mark multiple
+  #+begin_src emacs-lisp
+    (use-package mark-multiple
+      :ensure t
+      :bind
+      ("C-c m n" . 'mark-next-like-this)
+      ("C-c m a" . 'mark-all-like-this))
+
+
+  #+end_src
