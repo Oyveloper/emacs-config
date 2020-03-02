@@ -26,6 +26,11 @@
   (package-install 'dracula-theme)
   )
 
+(unless (package-installed-p 'atom-one-dark)
+  (package-refresh-contents)
+  (package-install 'atom-one-dark)
+ )
+
 
 (org-babel-load-file(expand-file-name "~/.emacs.d/config.org"))
 
@@ -113,8 +118,8 @@
      ("melpa" . "https://melpa.org/packages/"))))
  '(package-selected-packages
    (quote
-    (exec-path-from-shell latex-preview-pane auctex mandm-theme night-owl-theme dracula-theme overcast-theme avk-emacs-themes zeno-theme reykjavik-theme exotica-theme snazzy-theme doom-themes zweilight-theme omtose-phellack-theme hamburg-theme atom-one-dark-theme yaml-mode pretty-mode auc-tex company-jedi company-tern emmet doom-modeline yasnippet-snippets mark-multiple spaceline dashboard rainbow-delimiters switch-window rainbow-mode ido-vertical-mode which-key javaimp helm-org orca org-notebook ox-latex-subfigure px company-math latex-pretty-symbols latex-math-preview pdf-tools org-bullets arc-dark-theme gotham-theme oceanic-theme solarized-theme material-theme rjsx-mode tide company-web emmet-mode prettier-js add-node-modules-path flycheck web-mode magit anaconda-mode autopair all-the-icons neotree highlight-indent-guides spacemacs-theme clues-theme helm company markdown-mode python immaterial-theme org)))
- '(pdf-tools-handle-upgrades t)
+    (counsel-projectile projectile forge wgrep counsel-dash helm-dash exec-path-from-shell latex-preview-pane auctex mandm-theme night-owl-theme dracula-theme overcast-theme avk-emacs-themes zeno-theme reykjavik-theme exotica-theme snazzy-theme doom-themes zweilight-theme omtose-phellack-theme hamburg-theme atom-one-dark-theme yaml-mode pretty-mode auc-tex company-jedi company-tern emmet doom-modeline yasnippet-snippets mark-multiple spaceline dashboard rainbow-delimiters switch-window rainbow-mode ido-vertical-mode which-key javaimp helm-org orca org-notebook ox-latex-subfigure px company-math latex-pretty-symbols latex-math-preview pdf-tools org-bullets arc-dark-theme gotham-theme oceanic-theme solarized-theme material-theme rjsx-mode tide company-web emmet-mode prettier-js add-node-modules-path flycheck web-mode magit anaconda-mode autopair all-the-icons neotree highlight-indent-guides spacemacs-theme clues-theme helm company markdown-mode python immaterial-theme org)))
+ '(pdf-tools-handle-upgrades nil)
  '(pdf-view-midnight-colors (quote ("#b2b2b2" . "#292b2e")))
  '(pos-tip-background-color "#073642")
  '(pos-tip-foreground-color "#93a1a1")

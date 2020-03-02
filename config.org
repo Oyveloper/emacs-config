@@ -2,7 +2,7 @@
 ** Fullscreen at startup 
   #+begin_src emacs-lisp
     (add-to-list 'default-frame-alist '(fullscreen . maximized))
-  #+end_src
+  #+end_src 
 
 * Dashboard
   #+begin_src emacs-lisp
@@ -11,12 +11,14 @@
       :config
       (dashboard-setup-startup-hook)
 
-      (setq dashboard-items '((recents . 10)))
-      (setq dashboard-banner-logo-title "Hello Øyvind!"))
-      (setq dashboard-startup-banner 'logo)
-  #+end_src
-
-* Input
+      (setq dashboard-items '(
+                              (projects .5)
+                              (bookmarks .5)
+                              (recents . 10)))
+      (setq dashboard-center-contents t)
+      (setq dashboard-banner-logo-title "Hello Øyvind!")
+      (setq dashboard-startup-banner 'logo))
+  #+end_src 
 ** Mac modifier key
    #+begin_src emacs-lisp
 
@@ -39,6 +41,19 @@
        (ivy-mode))
        
    #+end_src
+** Counsel
+Adds ivy to even more places 
+#+begin_src emacs-lisp
+(use-package counsel
+  :ensure t
+  :diminish counsel-mode
+  :bind
+  (("M-y" . counsel-yank-pop)
+   :map ivy-minibuffer-map
+   ("M-y" . ivy-next-line-and-call))
+  :config
+  (counsel-mode))
+#+end_src
 * Python
 ** Default interpreter
    #+begin_src emacs-lisp
@@ -167,13 +182,16 @@
 *** pdf-tools
 
 #+begin_src emacs-lisp
-  (use-package pdf-tools
-    :ensure t
-    :config
-    (custom-set-variables
-      '(pdf-tools-handle-upgrades nil)) ; Use brew upgrade pdf-tools instead.
-    (setq pdf-info-epdfinfo-program "/usr/local/bin/epdfinfo"))
-  (pdf-tools-install)
+    (use-package pdf-tools
+      :ensure t
+      :config
+      (add-hook 'pdf-tools-enabled-hook 'auto-revert-mode)
+      (add-to-list 'auto-mode-alist '("\\.pdf\\'" . pdf-tools-install))
+      (setq pdf-view-use-scaling t)
+      (custom-set-variables
+        '(pdf-tools-handle-upgrades nil)) ; Use brew upgrade pdf-tools instead.
+      (setq pdf-info-epdfinfo-program "/usr/local/bin/epdfinfo")
+      (pdf-tools-install))
 #+end_src
 ** Latex
 *** latex path
@@ -195,11 +213,40 @@
 (setq org-format-latex-options (plist-put org-format-latex-options :scale 2.0))
 #+end_src
 
+*** Auto revert buffers
+#+begin_src emacs-lisp
+  (global-auto-revert-mode 1)
+  (setq auto-revert-interval 1) ;; Refresh buffers faster
+  (auto-revert-set-timer) ;; For updating the auto-refresh.
+#+end_src
+
 ** agenda 
 #+begin_src emacs-lisp
   (global-set-key (kbd "C-c a") 'org-agenda)
   (setq org-agenda-files (list "~/org/todo.org"))
 #+end_src
+* Projectile
+#+begin_src emacs-lisp
+(use-package projectile
+  :ensure t
+  :config
+  (projectile-mode)
+  (define-key projectile-mode-map (kbd "C-c C-p") 'projectile-command-map))
+
+(use-package counsel-projectile
+  :ensure t
+  :config
+  (counsel-projectile-mode))
+#+end_src
+
+#+begin_src emacs-lisp
+(projectile-register-project-type 'npm '("package.json")
+                  :compile "npm install"
+                  :test "npm run test"
+                  :run "npm run start"
+                  :test-suffix ".spec")
+#+end_src
+Set a better project type for npm projects with default run and test commands 
 * Macos 
 ** titlebar
    #+begin_src emacs-lisp
@@ -306,6 +353,12 @@
        :bind ("C-s" . swiper))
 
    #+end_src
+** Dont ask for killing processes 
+#+begin_src emacs-lisp
+(setq kill-buffer-query-functions
+  (remq 'process-kill-buffer-query-function
+         kill-buffer-query-functions))
+#+end_src
 ** yasnippet
 #+begin_src emacs-lisp
   (use-package yasnippet
@@ -317,7 +370,7 @@
     (yas-reload-all))
 
   (add-hook 'python-mode-hook 'yas-minor-mode)
-  (add-hook 'web-mode 'yas-minor-mode)
+  (add-hook 'js-mode-hook 'yas-minor-mode)
   (add-hook 'emacs-lisp-mode-hook 'yas-minor-mode)
   (add-hook 'org-mode-hook 'yas-minor-mode)
 
@@ -334,43 +387,69 @@
   
   #+end_src
 * Web
-** Web-mode
-   #+begin_src emacs-lisp
-     (use-package web-mode
-       :ensure t)
-     ;; enables web-mode for js files
-     (add-hook 'css-mode 'web-mode)
-     (add-to-list 'auto-mode-alist '("\\.jsx?$" . web-mode))
-     (add-to-list 'auto-mode-alist '("\\.js?$" . web-mode))
-   #+end_src
+
 ** JS
 #+begin_src emacs-lisp
-  (setq web-mode-content-types-alist '(("jsx" . "\\.js[x]?\\'")))
+(use-package rjsx-mode
+  :config
+  (add-to-list 'auto-mode-alist '("\\.js\\'" . rjsx-mode)))
+
 #+end_src
 
-** Flycheck
-#+begin_src emacs-lisp
-  (use-package flycheck
-    :ensure t
-    )
 
-  (setq-default flycheck-disabled-checkers
-                (append flycheck-disabled-checkers
-                        '(javascript-jshint json-jsonlist)))
-
-;; Enable eslint checker for web-mode
-(flycheck-add-mode 'javascript-eslint 'web-mode)
-;; Enable flycheck globally
-(add-hook 'after-init-hook #'global-flycheck-mode)
-#+end_src
 ** Emmet
 #+begin_src emacs-lisp
   (use-package emmet-mode
     :ensure t)
-  (add-hook 'web-mode-hook 'emmet-mode)
+  (add-hook 'js-mode-hook 'emmet-mode)
   (add-hook 'html-mode 'emmet-mode)
 
 
+#+end_src
+* Language server protocol 
+** Lsp mode 
+#+begin_src emacs-lisp
+  (use-package lsp-mode
+    :ensure t
+    :config
+    (setq lsp-prefer-flymake nil
+          lsp-enable-snippet nil
+          lsp-eldoc-enable-hover nil)
+    :hook(
+          (python-mode . lsp)
+          (css-mode .lsp)
+          (js-mode . lsp)
+          (rjsx-mode . lsp)
+          (html-mode . lsp)
+          (emacs-lisp-mode . lsp)))
+    (global-set-key (kbd "M-g i") 'lsp-describe-thing-at-point)
+    (global-set-key (kbd "M-g f") 'lsp-find-references)
+    (global-set-key (kbd "M-g r") 'lsp-rename)
+    (global-set-key (kbd "M-g t") 'lsp-ui-imenu)
+#+end_src
+
+“M-.” is used for jump-to-definition in lsp-mode, so it needs to be removed from the js-mode keymap.
+#+begin_src emacs-lisp
+(add-hook 'js-mode-hook (lambda () (define-key js-mode-map (kbd "M-.") 'nil)))
+#+end_src
+** Lsp-ui
+#+begin_src emacs-lisp
+(use-package flycheck
+  :ensure t
+  :diminish flycheck-mode)
+(use-package lsp-ui
+  :ensure t
+  :requires lsp-mode flycheck
+  :config
+  (setq lsp-ui-flycheck-enable t
+        lsp-ui-flycheck-list-position 'right
+        lsp-ui-flycheck-live-reporting t
+        lsp-ui-sideline-enable nil
+        lsp-ui-doc-enable nil)
+  (add-hook 'lsp-mode-hook 'lsp-ui-mode)
+  :bind
+  (:map lsp-mode-map
+        ("C-c s"   . lsp-ui-sideline-mode)))
 #+end_src
 * Company
 ** Normal setup
@@ -381,34 +460,27 @@
       (setq company-idle-delay 0)
       (setq company-minimum-prefix-length 2)
       :init
-      (add-hook 'after-init-hook 'global-company-mode))
+      :hook (lsp-mode . company-mode))
+
+    (use-package company-lsp
+      :ensure t
+      :requires company
+      :config
+      (setq company-backends ())
+      (push 'company-lsp company-backends)
+
+       ;; Disable client-side cache because the LSP server does a better job.
+      (setq company-transformers nil
+            company-lsp-async t
+            company-lsp-cache-candidates nil))
 
     (with-eval-after-load 'company
       (define-key company-active-map (kbd "M-n") nil)
       (define-key company-active-map (kbd "M-p") nil)
       (define-key company-active-map (kbd "C-n") #'company-select-next)
-      (define-key company-active-map (kbd "C-p") #'company-select-previous)
-
-      )
+      (define-key company-active-map (kbd "C-p") #'company-select-previous))
 
       #+end_src
-** Other backends
-*** python
-#+begin_src emacs-lisp
-  (use-package company-jedi
-    :ensure t)
-
-  (add-to-list 'company-backends 'company-jedi)
-
-#+end_src
-*** Tern (js)
-#+begin_src emacs-lisp
-  (use-package company-tern
-    :ensure t)
-
-
-  (add-to-list 'company-backends 'company-tern)
-#+end_src
 * Misc shortcuts
   #+begin_src emacs-lisp
     (global-set-key (kbd "C-c d") (lambda() (interactive)(find-file "~/.emacs.d/init.el")))
@@ -416,6 +488,72 @@
 
     (global-set-key (kbd "C-c c") (lambda () (interactive)(find-file "~/.emacs.d/config.org")))
   #+end_src
+* Dash
+** List of docsets
+#+begin_src emacs-lisp
+  (setq sh-docset-list '("Python 3"
+                         "Flask"
+                         "NumPy"
+                         "Matplotlib"
+                         "Emacs Lisp"
+                         "CSS"
+                         "HTML"
+                         "JavaScript"
+                         "React"
+                         "Express"
+                         "Java"))
+#+end_src
+** Add docsets to major-modes
+
+
+#+begin_src emacs-lisp
+  (use-package counsel-dash
+    :ensure t
+    :config
+    (setq counsel-dash-common-docsets sh-docset-list
+          dash-docs-enable-debugging  t
+          counsel-dash-min-length     2)
+    (add-hook 'python-mode-hook (lambda () (setq-local counsel-dash-docsets '("python 3" "NumPy" "Matplotlib"))))
+    (add-hook 'js-mode-hook (lambda () (setq-local counsel-dash-docsets '("CSS" "HTML" "JavaScript" "React" "Express"))))
+    (add-hook 'css-mode-hook (lambda () (setq-local counsel-dash-docsets '("CSS"))))
+    (add-hook 'html-mode-hook (lambda () (setq-local counsel-dash-docsets '("HTML" "CSS" "JavaScript"))))
+    (add-hook 'org-mode-hook (lambda () (setq-local counsel-dash-docsets '("Emacs Lisp"))))
+    (add-hook 'java-mode-hook (lambda () (setq-local counsel-dash-docsets '("Java"))))
+
+    (global-set-key (kbd "M-g d") 'counsel-dash-at-point)
+    (global-set-key (kbd "M-g D") 'counsel-dash))
+#+end_src
+** Installing all docsets in the list 
+#+begin_src emacs-lisp
+  (defun sh-install-docsets (docset-list)
+    "Install all docsets in docset-list recursively"
+    (dash-docs-install-docset (replace-regexp-in-string " " "_" (car docset-list)))
+    (if (cdr docset-list)
+        (sh-install-docsets (cdr docset-list))))
+
+  (defun sh-install-dash-docsets ()
+    "Install all specified docsets in sh-docset-list. This might take a while"
+    (interactive)
+    (sh-install-docsets sh-docset-list))
+#+end_src
+* Wgrep
+#+begin_src emacs-lisp
+(use-package wgrep
+  :ensure t
+  :bind (("M-g g" . rgrep)
+         ("M-g w" . wgrep-change-to-wgrep-mode)
+         ("M-g s" . wgrep-save-all-buffers)))
+#+end_src
+* Magit
+#+begin_src emacs-lisp
+(use-package magit
+  :ensure t
+  :bind ("C-x g" . magit-status)
+  :config
+  (global-set-key (kbd "M-g b") 'magit-blame)
+  (global-set-key (kbd "M-g h") 'magit-log-buffer-file))
+#+end_src
+
 * Homeassistant 
 ** Shortcut
 #+begin_src emacs-lisp
@@ -464,7 +602,7 @@
   #+begin_src emacs-lisp
     (use-package rainbow-mode
       :ensure t
-      :init (add-hook 'prog-mode-hook 'rainbow-mode))
+      :hook prog-mode)
   #+end_src
 #+begin_src emacs-lisp
   (use-package rainbow-delimiters
