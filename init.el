@@ -26,9 +26,9 @@
   (package-install 'dracula-theme)
   )
 
-(unless (package-installed-p 'atom-one-dark)
+(unless (package-installed-p 'atom-one-dark-theme)
   (package-refresh-contents)
-  (package-install 'atom-one-dark)
+  (package-install 'atom-one-dark-theme)
  )
 
 
